@@ -1,3 +1,4 @@
+import os
 import psutil
 import time
 
@@ -7,17 +8,27 @@ from ajenti.plugins.dashboard.api import DashboardWidget
 from ajenti.util import str_timedelta
 
 
+def get_proc_uptime():
+    try:
+        with open('/proc/uptime', 'r') as f:
+            return float(f.readline().split()[0])
+    except IOError as e:
+        raise e
+
+
 @plugin
-class UnixUptimeSensor (Sensor):
+class UnixUptimeSensor(Sensor):
     id = 'uptime'
     timeout = 1
 
     def measure(self, variant):
+        if os.path.isfile('/proc/uptime'):
+            return get_proc_uptime()
         return time.time() - psutil.BOOT_TIME
 
 
 @plugin
-class UptimeWidget (DashboardWidget):
+class UptimeWidget(DashboardWidget):
     name = _('Uptime')
     icon = 'off'
 
